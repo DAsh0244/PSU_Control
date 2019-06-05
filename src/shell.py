@@ -122,10 +122,12 @@ class PSUShell(AliasCmdInterpreter, HideNoneDocMix):
     # def do_EOF(self,*args):
         # return self.do_quit()
 
-    alias_exit = do_quit
+    alias_exit = alias_q = do_quit
     alias_sv = do_set_voltage
-    alias_sc = do_set_current
+    alias_si = do_set_current
     alias_so = do_set_output
+    alias_rr = do_read_response
+    alias_sc = do_send_cmd
 
 if __name__ == "__main__":
     import sys
