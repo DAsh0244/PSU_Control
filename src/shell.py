@@ -16,6 +16,9 @@ class PSUShell(AliasCmdInterpreter, HideNoneDocMix):
         super().__init__(*args,**kwargs)
         self.psu = TekPS252xG(port=port,addr=addr,output_settings=settings)
 
+    def preloop(self):
+        self.intro += '\nFound unit: {}'.format(self.psu._id)
+
     def do_set_voltage(self, line):
         """
         sets voltage of specified channel
@@ -83,6 +86,27 @@ class PSUShell(AliasCmdInterpreter, HideNoneDocMix):
                 self.psu.set_output_enable(True)
             # self.psu.set_output_enable(state)
 
+    def do_send_cmd(self,line):
+        """
+        sends arbitrary command text to unit
+
+        usage:
+            send_cmd <cmd>
+
+        params:
+            cmd: full SCPI command text to send to unit
+        """
+        self.psu.send_cmd(line)
+
+    def do_read_response(self,line):
+        """
+        reads response from unit
+
+        usage:
+            read_response
+        """
+        self.stdout.write(self.psu.read_response()+'\n')
+
     def do_quit(self, *args):
         """
         exits the shell
@@ -91,6 +115,9 @@ class PSUShell(AliasCmdInterpreter, HideNoneDocMix):
             quit
         """
         return True
+
+    def emptyline(self,line):
+        pass
 
     # def do_EOF(self,*args):
         # return self.do_quit()
