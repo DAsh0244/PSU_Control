@@ -128,5 +128,11 @@ class PSUShell(AliasCmdInterpreter, HideNoneDocMix):
     alias_so = do_set_output
 
 if __name__ == "__main__":
-    shell = PSUShell(port='COM11',addr=8, settings=dict())
-    shell.cmdloop()
+    import sys
+    try:
+        port=sys.argv[1]
+        shell = PSUShell(port=port, addr=8, settings=dict())
+        shell.cmdloop()
+    except IndexError:
+        print('Provide port the PSU is on as cli arg')
+    
