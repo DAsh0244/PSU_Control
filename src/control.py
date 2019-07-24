@@ -4,8 +4,10 @@ from enum import Enum
 from typing import Optional
 from abc import ABC, abstractmethod
 
-
 import serial
+
+__ver_info = (0,1,0)
+__version__ = '.'.join(map(str, __ver_info))
 
 PORT = 'COM11'
 ADDR = 8
@@ -26,11 +28,12 @@ class DeviceBase(ABC):
 
 class PrologixSerialDecive(DeviceBase):
     def __init__(self, port:str, baud:int=BAUD, addr:int=ADDR, timeout:float=TIMEOUT,
-                 buf_clear:bool=True, init_prologix:bool=False, debug:bool=False):
+                 buf_clear:bool=True, init_prologix:bool=False, enforce_addr:bool=False, debug:bool=False):
         self._ser = serial.Serial(port,baud,timeout=timeout)
         atexit.register(self._ser.close)
         self._addr = addr
         self._debug = debug
+        self._enforce_addr = enforce_addr
         if init_prologix:
             self.send_cmd('++mode 1')
             self.send_cmd('++auto 1')
@@ -47,6 +50,8 @@ class PrologixSerialDecive(DeviceBase):
         self.send_cmd('++mode {}'.format(mode))
     
     def send_cmd(self, cmd):
+        if self._enforce_addr:
+            self.send_cmd('++addr {}'.format(self._addr))
         if self._debug:
             print((cmd.strip()+self.EOL).encode(self.ENCODING))
         self._ser.write((cmd.strip()+self.EOL).encode(self.ENCODING))
@@ -60,7 +65,10 @@ class PrologixSerialDecive(DeviceBase):
         while tmp != b'':
             tmp = self._ser.readline()
 
-class TekSettings(dict):
+class PSUSettings(dict):
+    pass
+
+class TekSettings(PSUSettings):
     # OVP:bool
     # OCP:bool
     # tracking:str/enum NONE|SERies|PARallel
@@ -68,20 +76,20 @@ class TekSettings(dict):
     # channels:list of dict {voltage:float, current:float, enable:bool}
     pass
 
-DEFAULT_SETTINGS = TekSettings()
+class KeithleySettings(PSUSettings):
+    pass
 
-class TekPS252xG(PrologixSerialDecive):
-    def __init__(self, output_settings:TekSettings=DEFAULT_SETTINGS, *args, **kwargs):
+DEFAULT_SETTINGS = PSUSettings()
+
+class PSU(PrologixSerialDecive):
+    def __init__(self, output_settings:PSUSettings=DEFAULT_SETTINGS, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._settings = output_settings
         self._id:str = self.get_id()
-        self._channels = 3
+        self._channels = None
 
     def get_id(self):
         self.send_cmd('*idn?')
-        # id will be in form: TEKTRONIX,<model>,.,SCPI:<year> FW<version>
-        # 'TEKTRONIX,PS2521G, ,SCPI:94.0 FW:.15'
-        # regex re.compile(r'TEKTRONIX,(?P<model>.*?),.,SCPI:(?P<year>.*?)\sFW:(?P<version>.*)',re.I)
         resp = self.read_response()
         return resp
 
@@ -99,7 +107,7 @@ class TekPS252xG(PrologixSerialDecive):
     def sel_channel(self, channel:int):
         self.send_cmd('INST:NSEL {}'.format(channel))
 
-    def update_settings(self,settings:TekSettings):
+    def update_settings(self,settings:PSUSettings):
         pass
 
     def set_output_enable(self,output_state:bool):
@@ -114,7 +122,20 @@ class TekPS252xG(PrologixSerialDecive):
         self.send_cmd('SOUR:CURR {}'.format(current))
 
     def disable_all(self):
-        self.set_output_enable(False)
+        self.set_output_enable(False)    
+
+class Keithley2220G1(PSU):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._channels = 2
+
+class TekPS252xG(PSU):
+    # id will be in form: TEKTRONIX,<model>,.,SCPI:<year> FW<version>
+    # 'TEKTRONIX,PS2521G, ,SCPI:94.0 FW:.15'
+    # regex re.compile(r'TEKTRONIX,(?P<model>.*?),.,SCPI:(?P<year>.*?)\sFW:(?P<version>.*)',re.I)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._channels = 3
 
 if __name__ == "__main__":
     # psu = TekPS252xG(port=PORT)

@@ -2,8 +2,8 @@ from control import TekPS252xG,TekSettings
 from interpreter import AliasCmdInterpreter, HideNoneDocMix
 import parsers
  
-
-__version__ = '.'.join(map(str,(0,1,0)))
+__ver_info = (0,1,0)
+__version__ = '.'.join(map(str, __ver_info))
 
 class PSUShell(AliasCmdInterpreter, HideNoneDocMix):
     prompt = '> '
