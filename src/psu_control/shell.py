@@ -1,4 +1,4 @@
-import psu_control.parsers as _parsers
+from . import parsers as _parsers
 from .control import ( 
     TekPS252xG as _TekPS252xG,
     TekPSUSettings as _TekPSUSettings
