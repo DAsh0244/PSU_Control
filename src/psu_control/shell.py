@@ -1,20 +1,26 @@
-from control import TekPS252xG,TekSettings
-from interpreter import AliasCmdInterpreter, HideNoneDocMix
-import parsers
- 
+import psu_control.parsers as _parsers
+from .control import ( 
+    TekPS252xG as _TekPS252xG,
+    TekPSUSettings as _TekPSUSettings
+)
+from .interpreter import ( 
+    AliasCmdInterpreter as _AliasCmdInterpreter,  
+    HideNoneDocMix as _HideNoneDocMix
+)
+
 __ver_info = (0,1,0)
 __version__ = '.'.join(map(str, __ver_info))
 
-class PSUShell(AliasCmdInterpreter, HideNoneDocMix):
+class TekPS252xGShell(_AliasCmdInterpreter, _HideNoneDocMix):
     prompt = '> '
-    intro = 'TekPS252xG Control Shell v{}'.format(__version__)
+    intro = '_TekPS252xG Control Shell v{}'.format(__version__)
     doc_header = 'Commands (type help/? <topic>):'
     misc_header = 'Reference/help guides (type help/? <topic>):'
     undoc_header = None
 
-    def __init__(self, port:str, addr:int, settings:TekSettings, *args,**kwargs):
+    def __init__(self, port:str, addr:int, settings:_TekPSUSettings, *args,**kwargs):
         super().__init__(*args,**kwargs)
-        self.psu = TekPS252xG(port=port,addr=addr,output_settings=settings)
+        self.psu = _TekPS252xG(port=port,addr=addr,output_settings=settings)
 
     def preloop(self):
         self.intro += '\nFound unit: {}'.format(self.psu._id)
@@ -30,7 +36,7 @@ class PSUShell(AliasCmdInterpreter, HideNoneDocMix):
             channel: PSU channel (1-3)
             voltage: chanel output voltage (0.0-21.0 on channels 1,2, 0.0-6.5V on channel 3)
         """
-        args = parsers.parse_line(line, parsers.set_channel_parser)
+        args = _parsers.parse_line(line, _parsers.set_channel_parser)
         try: 
             voltage = float(args['param'])
             if args['channel'] < 3:
@@ -54,7 +60,7 @@ class PSUShell(AliasCmdInterpreter, HideNoneDocMix):
             channel: PSU channel (1-3)
             voltage: chanel output voltage (0.0-21.0 on channels 1,2, 0.0-6.5V on channel 3)
         """
-        args = parsers.parse_line(line, parsers.set_channel_parser)
+        args = _parsers.parse_line(line, _parsers.set_channel_parser)
         try: 
             current = float(args['param'])
             if args['channel'] < 3:
@@ -133,8 +139,8 @@ if __name__ == "__main__":
     import sys
     try:
         port=sys.argv[1]
-        shell = PSUShell(port=port, addr=8, settings=dict())
+        addr = sys.argv[2]
+        shell = TekPS252xGShell(port=port, addr=8, settings=dict())
         shell.cmdloop()
     except IndexError:
-        print('Provide port the PSU is on as cli arg')
-    
+        print('Provide port the PSU is on and it\'s GPIB address as cli args')

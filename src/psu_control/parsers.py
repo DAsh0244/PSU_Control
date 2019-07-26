@@ -4,7 +4,7 @@
 psu_control
 parsers.py
 Author: Danyal Ahsanullah
-Copyright (c):  2017 Danyal Ahsanullah
+Copyright (c):  2019 Danyal Ahsanullah
 License: N/A
 Description:
     parsers and parser fetching procedures for vaildating user input to shells.
@@ -72,12 +72,12 @@ set_channel_parser.add_argument('param', action='store', type=str, default=1,hel
 # itt_parser.add_argument('--step', action='store', type=int, default=100)
 
 
-launch_parser = argparse.ArgumentParser('electronics_calc', 'set of calculators to handle assortment of tasks related'
-                                                            ' to Electrical engineering applications')
-launch_parser.add_argument('-M', '--mode', action='store', type=str, default=None)
+# launch_parser = argparse.ArgumentParser('electronics_calc', 'set of calculators to handle assortment of tasks related'
+#                                                             ' to Electrical engineering applications')
+# launch_parser.add_argument('-M', '--mode', action='store', type=str, default=None)
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # components_parser.print_help()
     # itt_parser.print_help()
     # div_parser.print_help()
-    pass
+    # pass
