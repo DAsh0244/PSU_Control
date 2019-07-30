@@ -3,7 +3,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-requirements = ['pyserial']
+requirements = ['pyserial', 'prologix_usb']
 # with open('requirements.txt','r') as req:
 #      for line in req:
 #          requirements.append(line)
